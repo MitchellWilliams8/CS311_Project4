@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './App.css';
+import './App.css'; 
 
 const API_URL = 'http://localhost:5001/exercises';
 
@@ -9,9 +9,13 @@ function App() {
     exerciseName: '',
     weight: '',
     reps: '',
-    muscleGroup: ''
+    muscleGroup: 'Chest'
   });
   const [editingId, setEditingId] = useState(null);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResult, setSearchResult] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     fetchExercises();
@@ -25,6 +29,37 @@ function App() {
     } catch (error) {
       console.error('Error fetching data:', error);
     }
+  };
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+        alert('Please enter an exercise name to search');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/search?name=${encodeURIComponent(searchQuery)}`);
+        
+        if (response.status === 404) {
+            alert('Document not found: No exercise with that name exists.');
+            setSearchResult(null);
+            setShowModal(false);
+            return;
+        }
+
+        const data = await response.json();
+        setSearchResult(data);
+        setShowModal(true);
+    } catch (error) {
+        console.error('Search error:', error);
+        alert('Error occurred while searching');
+    }
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSearchResult(null);
+    setSearchQuery('');
   };
 
   const handleChange = (e) => {
@@ -55,7 +90,7 @@ function App() {
         return;
       }
 
-      setFormData({ exerciseName: '', weight: '', reps: '', muscleGroup: '' });
+      setFormData({ exerciseName: '', weight: '', reps: '', muscleGroup: 'Chest' });
       setEditingId(null);
       fetchExercises();
 
@@ -94,12 +129,38 @@ function App() {
 
   const handleCancel = () => {
     setEditingId(null);
-    setFormData({ exerciseName: '', weight: '', reps: '', muscleGroup: '' });
+    setFormData({ exerciseName: '', weight: '', reps: '', muscleGroup: 'Chest' });
   };
 
   return (
     <div className="container">
       <h1>Workout Log</h1>
+
+      <div className="search-container">
+        <input 
+            type="text" 
+            className="search-input" 
+            placeholder="Search exercise by name..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <button onClick={handleSearch} className="btn btn-primary">
+            Search
+        </button>
+      </div>
+
+      {showModal && searchResult && (
+        <div className="custom-overlay">
+            <div className="custom-modal">
+                <h2>Exercise Details</h2>
+                <p><strong>Name:</strong> {searchResult.exerciseName}</p>
+                <p><strong>Weight:</strong> {searchResult.weight} lbs</p>
+                <p><strong>Reps:</strong> {searchResult.reps}</p>
+                <p><strong>Muscle Group:</strong> {searchResult.muscleGroup}</p>
+                <button onClick={closeModal} className="close-btn">Close</button>
+            </div>
+        </div>
+      )}
 
       <div className="workout-form">
         <h3>{editingId ? 'Edit Log' : 'Log New Exercise'}</h3>

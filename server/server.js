@@ -26,6 +26,25 @@ const exerciseSchema = new mongoose.Schema({
 
 const Exercise = mongoose.model('Exercise', exerciseSchema);
 
+app.get('/exercises/search', async (req, res) => {
+    try {
+        const { name } = req.query;
+        if (!name) return res.status(400).json({ message: 'Input is required' });
+
+        const exercise = await Exercise.findOne({ 
+            exerciseName: { $regex: name, $options: 'i' } 
+        });
+
+        if (!exercise) {
+            return res.status(404).json({ message: 'Exercise not found' });
+        }
+
+        res.json(exercise);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 app.post('/exercises', async (req, res) => {
     try {
         const exercise = new Exercise(req.body);
