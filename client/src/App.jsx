@@ -136,6 +136,12 @@ function App() {
     <div className="container">
       <h1>Workout Log</h1>
 
+      <img 
+        src="/icon.png" 
+        alt="Icon" 
+        className="icon" 
+      />
+
       <div className="search-container">
         <input 
             type="text" 
@@ -250,7 +256,7 @@ function App() {
                 <td>{ex.muscleGroup}</td>
                 <td>
                   <button onClick={() => handleEdit(ex)} className="btn-primary">Edit</button>
-                  <button onClick={() => handleDelete(ex._id)} className="btn-danger">Delete</button>
+                  <button onClick={() => handleDelete(ex._id)} className="btn-delete">Delete</button>
                 </td>
               </tr>
             ))
